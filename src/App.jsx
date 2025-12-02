@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Home, User } from 'lucide-react';
 import ServiceCard from './components/ServiceCard';
 import { serviceCards } from './data/services';
+// Import the new pages
+import RescuePage from './pages/RescuePage';
+import ContactPage from './pages/ContactPage';
 
 // --- Components defined internally for simplicity, can be moved later ---
 
@@ -98,8 +101,11 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        {/* New Routes Added Here */}
+        <Route path="/rescue" element={<RescuePage />} />
+        <Route path="/rescue/contact" element={<ContactPage />} />
+        
         <Route path="/donate" element={<div className="p-10 text-center">Donate Page Placeholder</div>} />
-        {/* Add more routes here later */}
       </Routes>
     </Router>
   );
