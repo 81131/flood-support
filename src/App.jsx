@@ -1,58 +1,86 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { Home, User } from 'lucide-react';
+import { Home, User, LogOut, Shield } from 'lucide-react';
 import ServiceCard from './components/ServiceCard';
 import { serviceCards } from './data/services';
-// Import the new pages
 import RescuePage from './pages/RescuePage';
 import ContactPage from './pages/ContactPage';
+import LoginPage from './pages/LoginPage';
+import AdminPage from './pages/AdminPage';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
-// --- Components defined internally for simplicity, can be moved later ---
+// Header Component (Updated with Auth Logic)
+const Header = () => {
+  const { user, isAdmin, logout } = useAuth();
 
-const Header = () => (
-  <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      
-      {/* Left: Home Icon */}
-      <div className="flex items-center border-r border-gray-200 pr-4 h-full">
-        <Link to="/" className="text-gray-700 hover:text-blue-600">
-          <Home className="w-8 h-8" />
-        </Link>
-      </div>
-
-      {/* Center: Title & Nav */}
-      <div className="flex-1 flex items-center justify-between px-6">
-        <h1 className="text-xl font-bold text-gray-900 hidden md:block">
-          Flood Support by DV
-        </h1>
+  return (
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         
-        <nav className="flex space-x-4">
-          {['Donate', 'Supply Notices', 'Shelters'].map((item) => (
-            <Link 
-              key={item} 
-              to={`/${item.toLowerCase().replace(' ', '-')}`}
-              className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors border border-transparent hover:border-gray-200"
-            >
-              {item}
-            </Link>
-          ))}
-        </nav>
-      </div>
+        {/* Left: Home Icon */}
+        <div className="flex items-center border-r border-gray-200 pr-4 h-full">
+          <Link to="/" className="text-gray-700 hover:text-blue-600">
+            <Home className="w-8 h-8" />
+          </Link>
+        </div>
 
-      {/* Right: User Profile */}
-      <div className="flex items-center border-l border-gray-200 pl-4 h-full">
-        <div className="flex items-center gap-2 cursor-pointer hover:opacity-80">
-          <span className="text-sm font-semibold text-gray-800 hidden sm:block">
-            User Name
-          </span>
-          <div className="bg-gray-200 p-2 rounded-full">
-            <User className="w-5 h-5 text-gray-700" />
-          </div>
+        {/* Center: Title & Nav */}
+        <div className="flex-1 flex items-center justify-between px-6">
+          <h1 className="text-xl font-bold text-gray-900 hidden md:block">
+            Flood Support by DV
+          </h1>
+          
+          <nav className="flex space-x-4">
+            {['Donate', 'Supply Notices', 'Shelters'].map((item) => (
+              <Link 
+                key={item} 
+                to={`/${item.toLowerCase().replace(' ', '-')}`}
+                className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors border border-transparent hover:border-gray-200"
+              >
+                {item}
+              </Link>
+            ))}
+            {isAdmin && (
+              <Link 
+                to="/admin"
+                className="px-3 py-2 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors border border-transparent flex items-center gap-1"
+              >
+                <Shield className="w-4 h-4" /> Admin
+              </Link>
+            )}
+          </nav>
+        </div>
+
+        {/* Right: User Profile / Login */}
+        <div className="flex items-center border-l border-gray-200 pl-4 h-full">
+          {user ? (
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-semibold text-gray-800 hidden sm:block">
+                {user.isAnonymous ? 'Guest' : user.displayName || user.email}
+              </span>
+              <div 
+                onClick={logout} 
+                className="bg-gray-200 p-2 rounded-full cursor-pointer hover:bg-gray-300 transition-colors" 
+                title="Logout"
+              >
+                <LogOut className="w-5 h-5 text-gray-700" />
+              </div>
+            </div>
+          ) : (
+            <Link to="/login" className="flex items-center gap-2 cursor-pointer hover:opacity-80">
+              <span className="text-sm font-semibold text-gray-800 hidden sm:block">
+                Login
+              </span>
+              <div className="bg-gray-200 p-2 rounded-full">
+                <User className="w-5 h-5 text-gray-700" />
+              </div>
+            </Link>
+          )}
         </div>
       </div>
-    </div>
-  </header>
-);
+    </header>
+  );
+};
 
 const Footer = () => (
   <footer className="bg-gray-50 border-t border-gray-200 mt-12">
@@ -98,15 +126,17 @@ const HomePage = () => {
 // Main App Component with Routing
 export default function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        {/* New Routes Added Here */}
-        <Route path="/rescue" element={<RescuePage />} />
-        <Route path="/rescue/contact" element={<ContactPage />} />
-        
-        <Route path="/donate" element={<div className="p-10 text-center">Donate Page Placeholder</div>} />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/rescue" element={<RescuePage />} />
+          <Route path="/rescue/contact" element={<ContactPage />} />
+          <Route path="/donate" element={<div className="p-10 text-center">Donate Page Placeholder</div>} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
