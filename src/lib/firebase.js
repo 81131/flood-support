@@ -8,10 +8,19 @@ import {
   signOut,
   onAuthStateChanged
 } from "firebase/auth";
+import { 
+  getFirestore, 
+  connectFirestoreEmulator,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  collection,
+  query,
+  getDocs
+} from "firebase/firestore";
 
 // 1. Setup Firebase Config
-// For local development with emulators, these values don't need to be real yet.
-// When you deploy, you will replace these with keys from the Firebase Console.
 const firebaseConfig = {
   apiKey: "fake-api-key-for-local-dev",
   authDomain: "localhost",
@@ -21,24 +30,33 @@ const firebaseConfig = {
   appId: "1:123456789:web:123456789abc"
 };
 
-// 2. Initialize App
+// 2. Initialize App & Services
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-// 3. Connect to Local Emulator (Only in development)
-// Uncomment these lines when you run "firebase emulators:start"
+// 3. Connect to Emulators (Local Development)
 if (location.hostname === "localhost") {
   connectAuthEmulator(auth, "http://localhost:9099");
-  console.log("🔥 Connected to Auth Emulator");
+  connectFirestoreEmulator(db, 'localhost', 8080);
+  console.log("🔥 Connected to Auth & Firestore Emulators");
 }
 
 const googleProvider = new GoogleAuthProvider();
 
 export { 
   auth, 
+  db,
   googleProvider, 
   signInWithPopup, 
   signInAnonymously, 
-  signOut,
-  onAuthStateChanged 
+  signOut, 
+  onAuthStateChanged,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  collection,
+  query,
+  getDocs
 };
